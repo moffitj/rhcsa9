@@ -35,7 +35,22 @@ do
 	fi
 done
 
-echo -e "\033[33m[WARNING]\033[0m\t I'm not smart enough to test the user password is set correctly"
+### Check Password of users is 'password'. This assumes the use of yescrypt, which is the default in rhel10.
+
+for i in anna anouk linda lisa
+do
+  	PASSWORDTEST="password"
+        SALT="$(grep $i /etc/shadow | cut -d$ -f2-4 | xargs -i% echo $%$)"
+        HASH="$(grep $i /etc/shadow | cut -d$ -f5 | cut -d: -f1 | cut -d$ -f3)"
+        HASHTEST="$(perl -le "print crypt('$PASSWORDTEST', '$SALT')" | cut -d$ -f5)"
+
+        if [[ "$HASH" == "$HASHTEST" ]]; then
+                echo -e "\033[32m[OK]\033[0m\t\t user $i has password 'password'."
+        else
+            	echo -e "\033[31m[FAIL]\033[0m\t\\t user $i has an incorrect password."
+        fi
+done
+
 
 ###check groups profs and students
 
